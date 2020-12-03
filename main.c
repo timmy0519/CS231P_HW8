@@ -153,7 +153,27 @@ int main(int argc,char *argv[])
             p_time t;
             int headIdx = dq_nProcessor->head->data.p_idx;
             int headTime = dq_nProcessor->head->data.time;
+            int leftIdx = (dq_nProcessor->head->data.p_idx-1) % n_processors;
+            int rightIdx = (dq_nProcessor->head->data.p_idx+1) % n_processors;
+            int avgWork = (l_unit[headIdx] + l_unit[leftIdx] + l_unit[rightIdx]) /3;
+            int workToGive = (l_unit[headIdx] - avgWork);
+            if(l_unit[headIdx]>avgWork){
+                if(l_unit[leftIdx]<l_unit[headIdx] && l_unit[rightIdx]<l_unit[headIdx]){
+                    int toLeft = l_unit[headIdx] - l_unit[leftIdx];
+                    int toRight = l_unit[headIdx] - l_unit[rightIdx];
+                    double ratio = (double)toLeft/ (double)(toLeft+toRight);
 
+                    l_unit[leftIdx] +=  (int)(ratio* workToGive);
+                    l_unit[rightIdx] += (int)((1-ratio) * workToGive);
+                    
+                }else if(l_unit[leftIdx]<l_unit[headIdx])
+                    l_unit[leftIdx]+= workToGive;
+                else{
+                    l_unit[rightIdx]+= workToGive;
+                   
+                l_unit[headIdx] = avgWork;
+            }
+            //generate next request
             t.time = uniform_distribution(100+headTime, 1000+headTime);
             t.p_idx = headIdx;
             popLeft(dq_nProcessor);
