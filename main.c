@@ -168,7 +168,7 @@ int main(int argc,char *argv[])
                     
                 }else if(l_unit[leftIdx]<l_unit[headIdx])
                     l_unit[leftIdx]+= workToGive;
-                else{
+                else
                     l_unit[rightIdx]+= workToGive;
                    
                 l_unit[headIdx] = avgWork;
