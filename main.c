@@ -1,6 +1,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 typedef struct {
     int time ;
     int p_idx;
@@ -34,6 +35,15 @@ void showDq(Deque* d){
     while(temp){
         printf("p_idx: %d, time: %d\n",temp->data.p_idx,temp->data.time);
         temp = temp->next;
+    }
+    printf("**********\n");
+}
+void showloadU(int *arr,int n){
+    int i=0;
+    printf("**********\n");
+    while(i < n){
+        printf("l_unit for %d: %d\n",i,arr[i]);
+        i++;
     }
     printf("**********\n");
 }
@@ -107,6 +117,7 @@ void insertSort(Deque* d,p_time data){
     // showDq(d);
     // printf("########\n");
 }
+
 int uniform_distribution(int rangeLow, int rangeHigh) {
     double myRand = (double)rand()/RAND_MAX; 
     int range = rangeHigh - rangeLow + 1;
@@ -117,6 +128,19 @@ int compare(const void * a, const void * b)
 { 
     return ( (*(p_time*)a).time - (*(p_time*)b).time ); 
 } 
+bool isStable(int arr[], int n){
+    int k = 1;
+    for(int i=0;i<n;i++){
+        int left = (i+n-1)%n;
+        int right = (i+1)%n;
+        // if the difference between the current processor and its neighbor doesn't differ more than k
+        if(abs(arr[left]-arr[i])>k || abs(arr[right]-arr[i])>k){
+             return false;
+        }
+           
+    }
+    return true;
+}
 int main(int argc,char *argv[])
 {
     // initialization
@@ -148,12 +172,13 @@ int main(int argc,char *argv[])
     // showDq(dq_nProcessor);
     
     int time_idx =0;
+    bool earlyStop = false;
     while(time_idx++ < max_cycles){
         if(time_idx >= dq_nProcessor->head->data.time){
             p_time t;
             int headIdx = dq_nProcessor->head->data.p_idx;
             int headTime = dq_nProcessor->head->data.time;
-            int leftIdx = (dq_nProcessor->head->data.p_idx-1) % n_processors;
+            int leftIdx = (dq_nProcessor->head->data.p_idx-1+n_processors) % n_processors;
             int rightIdx = (dq_nProcessor->head->data.p_idx+1) % n_processors;
             int avgWork = (l_unit[headIdx] + l_unit[leftIdx] + l_unit[rightIdx]) /3;
             int workToGive = (l_unit[headIdx] - avgWork);
@@ -170,15 +195,28 @@ int main(int argc,char *argv[])
                     l_unit[leftIdx]+= workToGive;
                 else
                     l_unit[rightIdx]+= workToGive;
-                   
                 l_unit[headIdx] = avgWork;
             }
+            
+            earlyStop = isStable(l_unit,n_processors);
+            if(earlyStop){
+                showloadU(l_unit,n_processors);
+                printf("early stop at %d cycle!\n", time_idx);
+                break;
+            }
+            
             //generate next request
             t.time = uniform_distribution(100+headTime, 1000+headTime);
             t.p_idx = headIdx;
             popLeft(dq_nProcessor);
             insertSort(dq_nProcessor,t);
-            showDq(dq_nProcessor);
+            // showDq(dq_nProcessor);
         }
+        
     }
+    if(!earlyStop){
+        showloadU(l_unit,n_processors);
+        printf("reach max cycles!\n");
+    }
+        
 }
