@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 typedef struct {
     int time ;
     int p_idx;
@@ -130,10 +131,21 @@ int compare(const void * a, const void * b)
 } 
 bool isStable(int arr[], int n){
     int k = 1;
+    int maxVal = -1;
+    int minVal = __INT_MAX__;
     for(int i=0;i<n;i++){
+        // if(maxVal<arr[i])
+        //     maxVal = arr[i];
+        // if(minVal>arr[i])
+        //     minVal = arr[i];
+
+        // if(maxVal-minVal> 0.1* maxVal){
+        //     return false;
+        // }
         int left = (i+n-1)%n;
         int right = (i+1)%n;
         // if the difference between the current processor and its neighbor doesn't differ more than k
+        // int k = arr[i]/10;
         if(abs(arr[left]-arr[i])>k || abs(arr[right]-arr[i])>k){
              return false;
         }
@@ -200,7 +212,7 @@ int main(int argc,char *argv[])
             
             earlyStop = isStable(l_unit,n_processors);
             if(earlyStop){
-                showloadU(l_unit,n_processors);
+                // showloadU(l_unit,n_processors);
                 printf("early stop at %d cycle!\n", time_idx);
                 break;
             }
@@ -215,7 +227,7 @@ int main(int argc,char *argv[])
         
     }
     if(!earlyStop){
-        showloadU(l_unit,n_processors);
+        // showloadU(l_unit,n_processors);
         printf("reach max cycles!\n");
     }
         
